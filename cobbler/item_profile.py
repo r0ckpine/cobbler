@@ -55,6 +55,7 @@ FIELDS = [
   ["virt_bridge","SETTINGS:default_virt_bridge",'<<inherit>>',"Virt Bridge",True,"",0,"str"],
   ["dhcp_tag","default",'<<inherit>>',"DHCP Tag",True,"See manpage or leave blank",0,"str"],
   ["server","<<inherit>>",'<<inherit>>',"Server Override",True,"See manpage or leave blank",0,"str"],
+  ["next_server","<<inherit>>",'<<inherit>>',"Next Server Override",True,"See manpage or leave blank",0,"str"],
   ["ctime",0,0,"",False,"",0,"int"],
   ["mtime",0,0,"",False,"",0,"int"],
   ["name_servers","SETTINGS:default_name_servers",[],"Name Servers",True,"space delimited",0,"list"],
@@ -192,7 +193,15 @@ class Profile(item.Item):
         self.server = server
         return True
 
-  
+
+    def set_next_server(self,server):
+        if server in [None, ""]:
+            self.next_server = "<<inherit>>"
+        else:
+            self.next_server = validate.ipv4_address(server)
+        return True
+
+ 
     def set_kickstart(self,kickstart):
         """
 	Sets the kickstart.  This must be a NFS, HTTP, or FTP URL.

@@ -46,6 +46,7 @@ FIELDS = [
   ["comment","",0,"Comment",True,"Free form text description",0,"str"],
   ["depth",2,0,"",False,"",0,"int"],
   ["server","<<inherit>>",0,"Server Override",True,"See manpage or leave blank",0,"str"],
+  ["next_server","<<inherit>>",0,"Next Server Override",True,"See manpage or leave blank",0,"str"],
   ["virt_path","<<inherit>>",0,"Virt Path",True,"Ex: /directory or VolGroup00",0,"str"],
   ["virt_type","<<inherit>>",0,"Virt Type",True,"Virtualization technology to use",["xenpv","xenfv","qemu","kvm","vmware","openvz"],"str"],
   ["virt_cpus","<<inherit>>",0,"Virt CPUs",True,"",0,"int"],
@@ -73,7 +74,7 @@ FIELDS = [
   ["network_widget_c","",0,"",True,"",0,"str"], # not a real field, a marker for the web app
   ["*mtu","",0,"MTU",True,"",0,"str"],
   ["*ip_address","",0,"IP Address",True,"Should be used with --interface",0,"str"],
-  ["*interface_type","na",0,"Interface Type",True,"Should be used with --interface",["na","master","slave","bond","bond_slave","bridge","bridge_slave","bonded_bridge_slave"],"str"],
+  ["*interface_type","na",0,"Interface Type",True,"Should be used with --interface",["na","master","slave","bond","bond_slave","bridge","bridge_slave","bonded_bridge_slave","bmc"],"str"],
   ["*interface_master","",0,"Master Interface",True,"Should be used with --interface",0,"str"],
   ["*bonding_opts","",0,"Bonding Opts",True,"Should be used with --interface",0,"str"],
   ["*bridge_opts","",0,"Bridge Opts",True,"Should be used with --interface",0,"str"],
@@ -244,6 +245,13 @@ class System(item.Item):
         if server is None or server == "":
             server = "<<inherit>>"
         self.server = server
+        return True
+
+    def set_next_server(self,server):
+        if server is None or server == "":
+            self.next_server = "<<inherit>>"
+        else:
+            self.next_server = validate.ipv4_address(server)
         return True
 
     def set_proxy(self,proxy):
@@ -433,7 +441,7 @@ class System(item.Item):
     def set_interface_type(self,type,interface):
         # master and slave are deprecated, and will
         # be assumed to mean bonding slave/master
-        interface_types = ["bridge","bridge_slave","bond","bond_slave","bonded_bridge_slave","master","slave","na",""]
+        interface_types = ["bridge","bridge_slave","bond","bond_slave","bonded_bridge_slave","master","slave","bmc","na",""]
         if type not in interface_types:
             raise CX(_("interface type value must be one of: %s or blank" % interface_types.join(",")))
         if type == "na":

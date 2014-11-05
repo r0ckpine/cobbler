@@ -28,9 +28,7 @@ subnet 192.168.1.0 netmask 255.255.255.0 {
      next-server                $next_server;
      class "pxeclients" {
           match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
-          if option pxe-system-type = 00:02 {
-                  filename "ia64/elilo.efi";
-          } else if option pxe-system-type = 00:06 {
+          if option pxe-system-type = 00:06 {
                   filename "grub/grub-x86.efi";
           } else if option pxe-system-type = 00:07 {
                   filename "grub/grub-x86_64.efi";
@@ -55,13 +53,17 @@ group {
         #if $iface.ip_address:
         fixed-address $iface.ip_address;
         #end if
-        #if $iface.hostname:
+        #if $iface.dns_name:
+        option host-name "$iface.dns_name";
+        #else if $iface.hostname:
         option host-name "$iface.hostname";
         #end if
         #if $iface.netmask:
         option subnet-mask $iface.netmask;
         #end if
-        #if $iface.gateway:
+        #if $iface.if_gateway:
+        option routers $iface.if_gateway;
+        #else if $iface.gateway:
         option routers $iface.gateway;
         #end if
         #if $iface.enable_gpxe:
@@ -75,10 +77,9 @@ group {
         #else
         filename "$iface.filename";
         #end if
-        ## Cobbler defaults to $next_server, but some users
-        ## may like to use $iface.system.server for proxied setups
-        next-server $next_server;
-        ## next-server $iface.next_server;
+        #if $iface.next_server:
+        next-server $iface.next_server;
+        #end if
     }
         #end for
 }
